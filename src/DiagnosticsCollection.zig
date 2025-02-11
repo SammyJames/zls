@@ -1,5 +1,7 @@
 const std = @import("std");
+
 const lsp = @import("lsp");
+
 const offsets = @import("offsets.zig");
 const URI = @import("uri.zig");
 
@@ -234,7 +236,7 @@ pub fn publishDiagnostics(collection: *DiagnosticsCollection) (std.mem.Allocator
             collection.mutex.lock();
             defer collection.mutex.unlock();
 
-            const entry = collection.outdated_files.popOrNull() orelse break;
+            const entry = collection.outdated_files.pop() orelse break;
             defer collection.allocator.free(entry.key);
             const document_uri = entry.key;
 

@@ -8,20 +8,21 @@
 //!
 
 const std = @import("std");
-const DocumentStore = @import("DocumentStore.zig");
 const Ast = std.zig.Ast;
-const offsets = @import("offsets.zig");
-const URI = @import("uri.zig");
-const log = std.log.scoped(.analysis);
-const ast = @import("ast.zig");
-const tracy = @import("tracy");
-const InternPool = @import("analyser/InternPool.zig");
-const references = @import("features/references.zig");
 
+const tracy = @import("tracy");
+
+const InternPool = @import("analyser/InternPool.zig");
+const ast = @import("ast.zig");
 pub const DocumentScope = @import("DocumentScope.zig");
 pub const Declaration = DocumentScope.Declaration;
 pub const Scope = DocumentScope.Scope;
+const DocumentStore = @import("DocumentStore.zig");
+const references = @import("features/references.zig");
+const offsets = @import("offsets.zig");
+const URI = @import("uri.zig");
 
+const log = std.log.scoped(.analysis);
 const Analyser = @This();
 
 gpa: std.mem.Allocator,
@@ -3737,7 +3738,7 @@ pub fn getPositionContext(
         }
     }
 
-    if (stack.popOrNull()) |state| {
+    if (stack.pop()) |state| {
         switch (state.ctx) {
             .parens_expr => |loc| return .{ .var_access = loc },
             .var_access => |loc| {

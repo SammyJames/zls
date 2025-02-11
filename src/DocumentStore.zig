@@ -1,20 +1,22 @@
 //! A thread-safe container for all document related state like zig source files including `build.zig`.
 
 const std = @import("std");
-const builtin = @import("builtin");
-const URI = @import("uri.zig");
-const analysis = @import("analysis.zig");
-const offsets = @import("offsets.zig");
-const log = std.log.scoped(.store);
-const lsp = @import("lsp");
 const Ast = std.zig.Ast;
-const BuildAssociatedConfig = @import("BuildAssociatedConfig.zig");
-const BuildConfig = @import("build_runner/shared.zig").BuildConfig;
-const tracy = @import("tracy");
-const translate_c = @import("translate_c.zig");
-const DocumentScope = @import("DocumentScope.zig");
-const DiagnosticsCollection = @import("DiagnosticsCollection.zig");
+const builtin = @import("builtin");
 
+const lsp = @import("lsp");
+const tracy = @import("tracy");
+
+const analysis = @import("analysis.zig");
+const BuildConfig = @import("build_runner/shared.zig").BuildConfig;
+const BuildAssociatedConfig = @import("BuildAssociatedConfig.zig");
+const DiagnosticsCollection = @import("DiagnosticsCollection.zig");
+const DocumentScope = @import("DocumentScope.zig");
+const offsets = @import("offsets.zig");
+const translate_c = @import("translate_c.zig");
+const URI = @import("uri.zig");
+
+const log = std.log.scoped(.store);
 const DocumentStore = @This();
 
 allocator: std.mem.Allocator,
@@ -1000,7 +1002,7 @@ fn garbageCollectionImports(self: *DocumentStore) error{OutOfMemory}!void {
         try self.collectDependenciesInternal(arena.allocator(), handle, &queue, false);
     }
 
-    while (queue.popOrNull()) |uri| {
+    while (queue.pop()) |uri| {
         const handle_index = self.handles.getIndex(uri) orelse continue;
         if (reachable.isSet(handle_index)) continue;
         reachable.set(handle_index);
