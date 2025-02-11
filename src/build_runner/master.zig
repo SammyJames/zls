@@ -13,17 +13,21 @@
 //! `zig build --build-runner /path/to/zls/src/build_runner/master.zig` (if the cwd contains build.zig)
 //!
 
-const root = @import("@build");
 const std = @import("std");
-const builtin = @import("builtin");
 const assert = std.debug.assert;
 const mem = std.mem;
 const process = std.process;
 const ArrayList = std.ArrayList;
 const Step = std.Build.Step;
 const Allocator = std.mem.Allocator;
+const builtin = @import("builtin");
 
 pub const dependencies = @import("@dependencies");
+const root = @import("@build");
+
+const shared = @import("shared.zig");
+const Transport = shared.Transport;
+const BuildConfig = shared.BuildConfig;
 
 // ----------- List of Zig versions that introduced breaking changes -----------
 
@@ -955,10 +959,6 @@ fn createModuleDependenciesForStep(step: *Step) Allocator.Error!void {
 //
 //
 
-const shared = @import("shared.zig");
-const Transport = shared.Transport;
-const BuildConfig = shared.BuildConfig;
-
 const Packages = struct {
     allocator: std.mem.Allocator,
 
@@ -1024,7 +1024,7 @@ fn extractBuildInformation(
             stack.appendAssumeCapacity(&tls.step);
         }
 
-        while (stack.popOrNull()) |step| {
+        while (stack.pop()) |step| {
             const gop = try steps.getOrPut(gpa, step);
             if (gop.found_existing) continue;
 

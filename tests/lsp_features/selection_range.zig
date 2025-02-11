@@ -1,13 +1,12 @@
 const std = @import("std");
+const allocator: std.mem.Allocator = std.testing.allocator;
+
 const zls = @import("zls");
-
-const helper = @import("../helper.zig");
-const Context = @import("../context.zig").Context;
-
 const types = zls.types;
 const offsets = zls.offsets;
 
-const allocator: std.mem.Allocator = std.testing.allocator;
+const Context = @import("../context.zig").Context;
+const helper = @import("../helper.zig");
 
 test "empty" {
     try testSelectionRange("<>", &.{});
@@ -60,7 +59,7 @@ fn testSelectionRange(source: []const u8, want: []const []const u8) !void {
         try got.append(allocator, slice);
         it = r.parent;
     }
-    const last = got.pop();
+    const last = got.pop() orelse "";
     try std.testing.expectEqualStrings(phr.new_source, last);
     try std.testing.expectEqual(want.len, got.items.len);
     for (want, got.items) |expected, actual| {

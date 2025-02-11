@@ -1,11 +1,10 @@
 const std = @import("std");
+const allocator: std.mem.Allocator = std.testing.allocator;
+
 const zls = @import("zls");
-
-const Context = @import("../context.zig").Context;
-
 const types = zls.types;
 
-const allocator: std.mem.Allocator = std.testing.allocator;
+const Context = @import("../context.zig").Context;
 
 test "container decl" {
     try testDocumentSymbol(
@@ -129,7 +128,7 @@ fn testDocumentSymbol(source: []const u8, want: []const u8) !void {
             _ = stack.pop();
         }
     }
-    _ = got.popOrNull(); // Final \n
+    _ = got.pop(); // Final \n
 
     try std.testing.expectEqualStrings(want, got.items);
 }

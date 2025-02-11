@@ -2,8 +2,8 @@
 
 const std = @import("std");
 
-const offsets = @import("offsets.zig");
 const DocumentScope = @import("DocumentScope.zig");
+const offsets = @import("offsets.zig");
 
 pub fn printTree(tree: std.zig.Ast) void {
     if (!std.debug.runtime_safety) @compileError("this function should only be used in debug mode!");
@@ -97,6 +97,7 @@ pub const FailingAllocator = struct {
             .vtable = &.{
                 .alloc = alloc,
                 .resize = resize,
+                .remap = remap,
                 .free = free,
             },
         };
@@ -105,35 +106,44 @@ pub const FailingAllocator = struct {
     fn alloc(
         ctx: *anyopaque,
         len: usize,
-        log2_ptr_align: u8,
+        alignment: std.mem.Alignment,
         return_address: usize,
     ) ?[*]u8 {
         const self: *FailingAllocator = @ptrCast(@alignCast(ctx));
         if (shouldFail(self)) return null;
-        return self.internal_allocator.rawAlloc(len, log2_ptr_align, return_address);
+        return self.internal_allocator.rawAlloc(len, alignment, return_address);
     }
 
     fn resize(
         ctx: *anyopaque,
         old_mem: []u8,
-        log2_old_align: u8,
+        alignment: std.mem.Alignment,
         new_len: usize,
         ra: usize,
     ) bool {
         const self: *FailingAllocator = @ptrCast(@alignCast(ctx));
-        if (!self.internal_allocator.rawResize(old_mem, log2_old_align, new_len, ra))
+        if (!self.internal_allocator.rawResize(old_mem, alignment, new_len, ra))
             return false;
         return true;
+    }
+
+    fn remap(ctx: *anyopaque, memory: []u8, alignment: std.mem.Alignment, new_len: usize, ret_addr: usize) ?[*]u8 {
+        _ = ret_addr; // autofix
+        _ = new_len; // autofix
+        _ = alignment; // autofix
+        _ = memory; // autofix
+        _ = ctx; // autofix
+        return null;
     }
 
     fn free(
         ctx: *anyopaque,
         old_mem: []u8,
-        log2_old_align: u8,
+        alignment: std.mem.Alignment,
         ra: usize,
     ) void {
         const self: *FailingAllocator = @ptrCast(@alignCast(ctx));
-        self.internal_allocator.rawFree(old_mem, log2_old_align, ra);
+        self.internal_allocator.rawFree(old_mem, alignment, ra);
     }
 
     fn shouldFail(self: *FailingAllocator) bool {
